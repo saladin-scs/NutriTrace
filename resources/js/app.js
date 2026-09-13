@@ -1,8 +1,11 @@
 import './bootstrap';
 
 import Alpine from 'alpinejs';
+import { createControlTower } from './control-tower';
 
 window.Alpine = Alpine;
+
+Alpine.data('ntControlTower', (config = {}) => createControlTower(config));
 
 Alpine.data('ntRealtime', (config = {}) => ({
     open: false,
@@ -24,7 +27,6 @@ Alpine.data('ntRealtime', (config = {}) => ({
             }
         });
 
-        // Convert server flash messages into toasts once.
         if (config.flashSuccess) {
             this.pushToast({
                 id: 'flash-ok',
@@ -82,7 +84,6 @@ Alpine.data('ntRealtime', (config = {}) => ({
                 return;
             }
 
-            // Merge newer notifications to the top and toast unread ones.
             const fresh = [];
             for (const n of incoming) {
                 if (this.knownIds.has(n.id)) {
@@ -99,7 +100,7 @@ Alpine.data('ntRealtime', (config = {}) => ({
                 this.items = [...fresh, ...this.items].slice(0, 20);
             }
         } catch (e) {
-            // Silent: keep UI resilient if the tab is offline.
+            // Silent offline resilience.
         }
     },
 

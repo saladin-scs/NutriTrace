@@ -31,15 +31,54 @@
     </div>
 
     <div class="space-y-6 lg:col-span-2">
+        <div class="nt-card" x-data="{ selected: null }">
+            <h2 class="font-display text-lg font-semibold">Timeline digitale</h2>
+            <p class="mt-1 text-sm text-nt-ink/55">Historique événementiel du lot — cliquer pour le détail</p>
+            <ol class="mt-4 space-y-0">
+                @foreach ($batch->traceabilityEvents as $index => $event)
+                    <li class="relative flex gap-4 pb-6 last:pb-0">
+                        @if (! $loop->last)
+                            <span class="absolute left-[0.65rem] top-6 h-[calc(100%-0.5rem)] w-px bg-emerald-800/20"></span>
+                        @endif
+                        <span class="relative z-10 mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-800 text-[10px] font-bold text-white">{{ $index + 1 }}</span>
+                        <button type="button"
+                                class="w-full rounded-xl text-left transition hover:bg-nt-mist/60"
+                                @click="selected = selected === {{ $event->id }} ? null : {{ $event->id }}">
+                            <p class="font-medium">{{ $event->occurred_at?->format('H:i') }} — {{ $event->title ?: $event->type->label() }}</p>
+                            <p class="text-sm text-nt-ink/55">
+                                {{ $event->organization?->name }}
+                                @if ($event->location) · {{ $event->location->city }} @endif
+                                · {{ $event->occurred_at?->format('d/m/Y') }}
+                            </p>
+                            <div x-cloak x-show="selected === {{ $event->id }}" class="mt-2 space-y-1 rounded-lg border border-[var(--nt-line)] bg-white/80 px-3 py-2 text-xs text-nt-ink/70">
+                                <p>Type — {{ $event->type->label() }}</p>
+                                <p>Acteur — {{ $event->actor?->name ?: '—' }}</p>
+                                <p>Quantité — {{ $event->quantity !== null ? $event->quantity.' '.$event->unit : '—' }}</p>
+                                @if (! empty($event->meta['shipment_code']))
+                                    <p>Shipment — {{ $event->meta['shipment_code'] }}</p>
+                                @endif
+                                @if (! empty($event->meta['vehicle']))
+                                    <p>Véhicule — {{ $event->meta['vehicle'] }}</p>
+                                @endif
+                                @if ($event->notes)
+                                    <p>Notes — {{ $event->notes }}</p>
+                                @endif
+                            </div>
+                        </button>
+                    </li>
+                @endforeach
+            </ol>
+        </div>
+
         <div class="nt-card">
-            <h2 class="font-display text-lg font-semibold">Chaîne de traçabilité</h2>
+            <h2 class="font-display text-lg font-semibold">Chaîne synthétique</h2>
             <ol class="mt-4 space-y-0">
                 @foreach ($nodes as $index => $node)
                     <li class="relative flex gap-4 pb-6 last:pb-0">
                         @if (! $loop->last)
                             <span class="absolute left-[0.65rem] top-6 h-[calc(100%-0.5rem)] w-px bg-emerald-800/20"></span>
                         @endif
-                        <span class="relative z-10 mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-800 text-[10px] font-bold text-white">{{ $index + 1 }}</span>
+                        <span class="relative z-10 mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-800/80 text-[10px] font-bold text-white">{{ $index + 1 }}</span>
                         <div>
                             <p class="font-medium">{{ $node->label }}</p>
                             <p class="text-sm text-nt-ink/55">

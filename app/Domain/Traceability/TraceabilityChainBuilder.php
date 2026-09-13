@@ -75,17 +75,6 @@ final class TraceabilityChainBuilder
     {
         $enum = $type instanceof TraceabilityEventType ? $type : TraceabilityEventType::from($type);
 
-        return match ($enum) {
-            TraceabilityEventType::Production => 'Production',
-            TraceabilityEventType::Receipt => 'Réception',
-            TraceabilityEventType::Transformation => 'Transformation',
-            TraceabilityEventType::Distribution => 'Distribution',
-            TraceabilityEventType::Sale => 'Vente',
-            TraceabilityEventType::Consumption => 'Consommation',
-            TraceabilityEventType::Loss => 'Perte',
-            TraceabilityEventType::WasteDeclared => 'Déchet déclaré',
-            TraceabilityEventType::ColdStorageEntry => 'Entrée chambre froide',
-            TraceabilityEventType::ColdStorageExit => 'Sortie chambre froide',
-        };
+        return $enum->label();
     }
 }

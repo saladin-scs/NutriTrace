@@ -80,6 +80,7 @@ class BatchController extends Controller
             'productionLocation',
             'traceabilityEvents.organization',
             'traceabilityEvents.location',
+            'traceabilityEvents.actor',
             'parentBatch',
             'distributions.fromOrganization',
             'distributions.toOrganization',

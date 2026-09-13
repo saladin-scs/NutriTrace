@@ -80,6 +80,30 @@ class RecordDistributionAction
                 'to' => $to->id,
             ]);
 
+            if (! empty($data['create_shipment'])) {
+                app(\App\Actions\Shipments\CreateShipmentAction::class)->execute($actor, [
+                    'distribution_id' => $distribution->id,
+                    'distribution_channel_id' => $data['distribution_channel_id'] ?? null,
+                    'vehicle_id' => $data['vehicle_id'] ?? null,
+                    'route_id' => $data['route_id'] ?? null,
+                    'from_organization_id' => $from->id,
+                    'to_organization_id' => $to->id,
+                    'from_location_id' => $distribution->from_location_id,
+                    'to_location_id' => $distribution->to_location_id,
+                    'origin_node_id' => $data['origin_node_id'] ?? null,
+                    'destination_node_id' => $data['destination_node_id'] ?? null,
+                    'distance_km' => $distribution->distance_km,
+                    'eta_at' => $data['eta_at'] ?? null,
+                    'notes' => $distribution->notes,
+                ], [
+                    [
+                        'batch_id' => $batch->id,
+                        'quantity' => $distribution->quantity,
+                        'unit' => $distribution->unit,
+                    ],
+                ]);
+            }
+
             return $distribution->fresh(['batch', 'fromOrganization', 'toOrganization']);
         });
     }

@@ -26,6 +26,8 @@
             <nav class="hidden items-center gap-5 lg:flex">
                 @auth
                     <a href="{{ route('dashboard') }}" class="nt-nav-link {{ request()->routeIs('dashboard') ? 'is-active' : '' }}">Dashboard</a>
+                    <a href="{{ route('control-tower.index') }}" class="nt-nav-link {{ request()->routeIs('control-tower.*') ? 'is-active' : '' }}">Control Tower</a>
+                    <a href="{{ route('shipments.index') }}" class="nt-nav-link {{ request()->routeIs('shipments.*') ? 'is-active' : '' }}">Shipments</a>
                     <a href="{{ route('organizations.index') }}" class="nt-nav-link {{ request()->routeIs('organizations.*') ? 'is-active' : '' }}">Organisations</a>
                     <a href="{{ route('products.index') }}" class="nt-nav-link {{ request()->routeIs('products.*') ? 'is-active' : '' }}">Produits</a>
                     <a href="{{ route('batches.index') }}" class="nt-nav-link {{ request()->routeIs('batches.*') ? 'is-active' : '' }}">Lots</a>
@@ -65,6 +67,8 @@
             <nav class="nt-container flex flex-col gap-1 py-3">
                 @auth
                     <a href="{{ route('dashboard') }}" class="rounded-xl px-3 py-2.5 text-sm font-medium hover:bg-nt-mist">Dashboard</a>
+                    <a href="{{ route('control-tower.index') }}" class="rounded-xl px-3 py-2.5 text-sm font-medium hover:bg-nt-mist">Control Tower</a>
+                    <a href="{{ route('shipments.index') }}" class="rounded-xl px-3 py-2.5 text-sm font-medium hover:bg-nt-mist">Shipments</a>
                     <a href="{{ route('organizations.index') }}" class="rounded-xl px-3 py-2.5 text-sm font-medium hover:bg-nt-mist">Organisations</a>
                     <a href="{{ route('products.index') }}" class="rounded-xl px-3 py-2.5 text-sm font-medium hover:bg-nt-mist">Produits</a>
                     <a href="{{ route('batches.index') }}" class="rounded-xl px-3 py-2.5 text-sm font-medium hover:bg-nt-mist">Lots</a>

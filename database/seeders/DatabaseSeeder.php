@@ -36,5 +36,6 @@ class DatabaseSeeder extends Seeder
         $this->call(PlatformDemoOrganizationsSeeder::class);
         $this->call(TraceabilityDemoSeeder::class);
         $this->call(ColdRoomDemoSeeder::class);
+        $this->call(ControlTowerDemoSeeder::class);
     }
 }
