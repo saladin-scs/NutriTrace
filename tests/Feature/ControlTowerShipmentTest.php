@@ -70,9 +70,20 @@ class ControlTowerShipmentTest extends TestCase
         $shipment = app(ReceiveShipmentAction::class)->execute($user, $shipment->fresh());
         $this->assertSame(ShipmentStatus::Delivered, $shipment->status);
         $this->assertSame(VehicleStatus::Available, $vehicle->fresh()->status);
+        $this->assertSame($to->id, $batch->fresh()->organization_id);
         $this->assertDatabaseHas('traceability_events', [
             'batch_id' => $batch->id,
             'type' => TraceabilityEventType::Delivered->value,
+        ]);
+        $this->assertDatabaseHas('stock_movements', [
+            'shipment_id' => $shipment->id,
+            'batch_id' => $batch->id,
+            'type' => 'shipment',
+        ]);
+        $this->assertDatabaseHas('stock_movements', [
+            'shipment_id' => $shipment->id,
+            'batch_id' => $batch->id,
+            'type' => 'reception',
         ]);
     }
 
@@ -97,7 +108,14 @@ class ControlTowerShipmentTest extends TestCase
         $this->withToken($token)
             ->getJson('/api/v1/dashboard/control-tower')
             ->assertOk()
-            ->assertJsonPath('data.kpis.active_shipments', 1);
+            ->assertJsonPath('data.kpis.active_shipments', 1)
+            ->assertJsonPath('data.shipments.0.batch_count', 1)
+            ->assertJsonFragment(['product' => 'Produit Test']);
+
+        $this->actingAs($user)
+            ->getJson(route('control-tower.feed'))
+            ->assertOk()
+            ->assertJsonStructure(['data' => ['shipments', 'nodes', 'kpis']]);
 
         $this->withToken($token)
             ->getJson('/api/v1/shipments')

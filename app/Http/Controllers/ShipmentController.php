@@ -9,6 +9,8 @@ use App\Domain\Distribution\ControlTowerQuery;
 use App\Http\Requests\Shipments\StoreShipmentRequest;
 use App\Models\Batch;
 use App\Models\DistributionChannel;
+use App\Models\DistributionNode;
+use App\Models\Organization;
 use App\Models\Route as LogisticsRoute;
 use App\Models\Shipment;
 use App\Models\Vehicle;
@@ -37,10 +39,12 @@ class ShipmentController extends Controller
         $this->authorize('create', Shipment::class);
 
         return view('shipments.create', [
-            'batches' => Batch::query()->with('product')->latest()->limit(100)->get(),
+            'batches' => Batch::query()->with(['product', 'organization'])->latest()->limit(100)->get(),
             'vehicles' => Vehicle::query()->orderBy('registration')->get(),
-            'routes' => LogisticsRoute::query()->orderBy('code')->get(),
+            'routes' => LogisticsRoute::query()->with(['originNode', 'destinationNode'])->orderBy('code')->get(),
             'channels' => DistributionChannel::query()->orderBy('name')->get(),
+            'organizations' => Organization::query()->orderBy('name')->get(['id', 'name', 'type']),
+            'nodes' => DistributionNode::query()->where('status', 'active')->orderBy('name')->get(['id', 'name', 'code', 'organization_id', 'node_type']),
         ]);
     }
 

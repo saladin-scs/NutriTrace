@@ -22,6 +22,7 @@ Route::get('/trace/{code}', TracePassportController::class)->name('trace.show');
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::get('/control-tower', [ControlTowerController::class, 'index'])->name('control-tower.index');
+    Route::get('/control-tower/feed', [ControlTowerController::class, 'feed'])->name('control-tower.feed');
     Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
     Route::get('/alert-center', [AlertCenterController::class, 'index'])->name('alert-center.index');
     Route::get('/alert-center/{anomaly}', [AlertCenterController::class, 'show'])->name('alert-center.show');

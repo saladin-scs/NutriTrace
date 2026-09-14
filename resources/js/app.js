@@ -7,6 +7,34 @@ window.Alpine = Alpine;
 
 Alpine.data('ntControlTower', (config = {}) => createControlTower(config));
 
+Alpine.data('shipmentCreateForm', (batches = []) => ({
+    batches,
+    rows: [{ key: 1, batch_id: '', quantity: '', unit: 'kg' }],
+    nextKey: 2,
+
+    addRow() {
+        this.rows.push({ key: this.nextKey++, batch_id: '', quantity: '', unit: 'kg' });
+    },
+
+    removeRow(index) {
+        if (this.rows.length <= 1) {
+            return;
+        }
+        this.rows.splice(index, 1);
+    },
+
+    onBatchChange(row) {
+        const batch = this.batches.find((b) => String(b.id) === String(row.batch_id));
+        if (!batch) {
+            return;
+        }
+        if (!row.quantity) {
+            row.quantity = batch.quantity;
+        }
+        row.unit = batch.unit || 'kg';
+    },
+}));
+
 Alpine.data('ntRealtime', (config = {}) => ({
     open: false,
     unread: 0,

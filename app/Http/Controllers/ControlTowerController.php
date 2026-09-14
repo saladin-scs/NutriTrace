@@ -6,6 +6,7 @@ use App\Domain\Distribution\ControlTowerQuery;
 use App\Facades\Analytics;
 use App\Models\Anomaly;
 use App\Models\Shipment;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -31,5 +32,16 @@ class ControlTowerController extends Controller
                 ->get(),
             'tab' => $tab,
         ]);
+    }
+
+    public function feed(ControlTowerQuery $query): JsonResponse
+    {
+        $this->authorize('viewAny', Shipment::class);
+
+        if (request()->hasSession()) {
+            request()->session()->save();
+        }
+
+        return response()->json(['data' => $query->mapPayload()]);
     }
 }

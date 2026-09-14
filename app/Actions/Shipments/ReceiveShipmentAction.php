@@ -2,6 +2,7 @@
 
 namespace App\Actions\Shipments;
 
+use App\Domain\Distribution\ShipmentCargoService;
 use App\Domain\Identity\AuditLogger;
 use App\Enums\RouteStatus;
 use App\Enums\ShipmentStatus;
@@ -14,7 +15,10 @@ use InvalidArgumentException;
 
 class ReceiveShipmentAction
 {
-    public function __construct(private AuditLogger $audit) {}
+    public function __construct(
+        private AuditLogger $audit,
+        private ShipmentCargoService $cargo,
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data
@@ -26,7 +30,15 @@ class ReceiveShipmentAction
         }
 
         return DB::transaction(function () use ($actor, $shipment, $data) {
-            $shipment->loadMissing(['items.batch', 'vehicle', 'route', 'distribution']);
+            $shipment->loadMissing([
+                'items.batch.product',
+                'vehicle',
+                'route',
+                'distribution',
+                'toOrganization',
+                'originNode',
+                'destinationNode.coldRoom',
+            ]);
 
             $deliveredAt = $data['delivered_at'] ?? now();
             $receivedQtyFactor = isset($data['received_quantity_factor'])
@@ -109,8 +121,11 @@ class ReceiveShipmentAction
                     'meta' => [
                         'shipment_id' => $shipment->id,
                         'from_organization_id' => $shipment->from_organization_id,
+                        'product' => $batch->product?->name,
                     ],
                 ]);
+
+                $this->cargo->recordReceive($actor, $shipment, $item, $qty, $deliveredAt);
             }
 
             $this->audit->log($actor, 'shipment.received', $shipment, null, [

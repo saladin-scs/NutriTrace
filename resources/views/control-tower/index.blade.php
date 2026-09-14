@@ -34,7 +34,7 @@
     </div>
 
     @if ($isOps)
-        <div x-data="ntControlTower(@js(['tower' => $tower]))">
+        <div x-data="ntControlTower(@js(['tower' => $tower, 'feedUrl' => route('control-tower.feed'), 'refreshMs' => 20000]))">
             <div class="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
                 <div class="rounded-2xl border border-[var(--nt-line)] bg-white/85 px-4 py-3">
                     <p class="text-[11px] uppercase tracking-wide text-nt-ink/45">Shipments actifs</p>
@@ -87,6 +87,10 @@
                             <option value="dispatched">Expédié</option>
                         </select>
                     </div>
+                    <label class="flex items-center gap-2 text-xs text-nt-ink/70">
+                        <input type="checkbox" class="rounded border-[var(--nt-line)]" x-model="hideDelivered" @change="applyFilters()">
+                        Masquer livrés
+                    </label>
                     <div class="border-t border-[var(--nt-line)] pt-3">
                         <p class="mb-2 text-xs font-medium uppercase tracking-wide text-nt-ink/45">Shipments</p>
                         <ul class="max-h-72 space-y-1 overflow-y-auto text-sm">
@@ -96,7 +100,7 @@
                                             class="w-full rounded-xl px-2.5 py-2 text-left hover:bg-nt-mist"
                                             @click="selectShipment(s)">
                                         <span class="font-medium" x-text="s.code"></span>
-                                        <span class="mt-0.5 block text-xs text-nt-ink/50" x-text="(s.origin || '—') + ' → ' + (s.destination || '—')"></span>
+                                        <span class="mt-0.5 block text-xs text-nt-ink/50" x-text="s.product_summary || ((s.origin || '—') + ' → ' + (s.destination || '—'))"></span>
                                     </button>
                                 </li>
                             </template>
@@ -122,10 +126,23 @@
                         <div x-cloak x-show="selected?.kind === 'shipment'" class="space-y-2 overflow-y-auto text-sm">
                             <p class="font-display text-lg font-semibold" x-text="selected?.data?.code"></p>
                             <p><span class="text-nt-ink/45">Statut</span> — <span x-text="selected?.data?.status_label"></span></p>
-                            <p><span class="text-nt-ink/45">Origine</span> — <span x-text="selected?.data?.origin || '—'"></span></p>
-                            <p><span class="text-nt-ink/45">Destination</span> — <span x-text="selected?.data?.destination || '—'"></span></p>
+                            <p><span class="text-nt-ink/45">Origine</span> — <span x-text="selected?.data?.origin || selected?.data?.from || '—'"></span></p>
+                            <p><span class="text-nt-ink/45">Destination</span> — <span x-text="selected?.data?.destination || selected?.data?.to || '—'"></span></p>
                             <p><span class="text-nt-ink/45">Véhicule</span> — <span x-text="selected?.data?.vehicle || '—'"></span></p>
+                            <p><span class="text-nt-ink/45">Charge</span> — <span x-text="(selected?.data?.load_kg ?? '—') + ' kg'"></span></p>
                             <p><span class="text-nt-ink/45">ETA</span> — <span x-text="selected?.data?.eta_at ? new Date(selected.data.eta_at).toLocaleString('fr-TN') : '—'"></span></p>
+                            <div class="rounded-xl border border-[var(--nt-line)] bg-nt-mist/40 px-3 py-2">
+                                <p class="text-[11px] uppercase tracking-wide text-nt-ink/45">Lots / produits</p>
+                                <p class="mt-1 font-medium" x-text="selected?.data?.product_summary || '—'"></p>
+                                <ul class="mt-2 space-y-1">
+                                    <template x-for="b in (selected?.data?.batches || [])" :key="b.batch_id">
+                                        <li class="text-xs text-nt-ink/70">
+                                            <a class="text-emerald-800 underline" :href="`/batches/${b.batch_id}`" x-text="b.batch_code"></a>
+                                            <span x-text="' · ' + (b.product || '') + ' · ' + b.quantity + ' ' + (b.unit || '')"></span>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </div>
                             <template x-if="selected?.data?.id">
                                 <a class="nt-btn mt-2 inline-flex !py-2 text-xs" :href="`/shipments/${selected.data.id}`">Ouvrir</a>
                             </template>
@@ -174,7 +191,7 @@
                         <div class="min-w-[200px] rounded-xl border border-[var(--nt-line)] bg-nt-mist/40 px-3 py-2 text-sm">
                             <p class="font-medium" x-text="a.code"></p>
                             <p class="text-xs text-nt-ink/55" x-text="a.status_label"></p>
-                            <p class="mt-1 text-xs text-nt-ink/45" x-text="(a.from || '—') + ' → ' + (a.to || '—')"></p>
+                            <p class="mt-1 text-xs text-nt-ink/45" x-text="a.product_summary || ((a.from || '—') + ' → ' + (a.to || '—'))"></p>
                         </div>
                     </template>
                 </div>

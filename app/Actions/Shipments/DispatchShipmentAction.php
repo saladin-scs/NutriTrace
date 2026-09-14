@@ -2,6 +2,7 @@
 
 namespace App\Actions\Shipments;
 
+use App\Domain\Distribution\ShipmentCargoService;
 use App\Domain\Identity\AuditLogger;
 use App\Enums\BatchStatus;
 use App\Enums\RouteStatus;
@@ -15,7 +16,10 @@ use InvalidArgumentException;
 
 class DispatchShipmentAction
 {
-    public function __construct(private AuditLogger $audit) {}
+    public function __construct(
+        private AuditLogger $audit,
+        private ShipmentCargoService $cargo,
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data
@@ -27,7 +31,13 @@ class DispatchShipmentAction
         }
 
         return DB::transaction(function () use ($actor, $shipment, $data) {
-            $shipment->loadMissing(['items.batch', 'vehicle', 'route']);
+            $shipment->loadMissing([
+                'items.batch.product',
+                'vehicle',
+                'route',
+                'originNode.coldRoom',
+                'destinationNode',
+            ]);
 
             $status = ! empty($data['delayed'])
                 ? ShipmentStatus::Delayed
@@ -109,8 +119,11 @@ class DispatchShipmentAction
                     'meta' => [
                         'shipment_id' => $shipment->id,
                         'vehicle' => $shipment->vehicle?->registration,
+                        'product' => $batch->product?->name,
                     ],
                 ]);
+
+                $this->cargo->recordDispatch($actor, $shipment, $item, $dispatchedAt);
             }
 
             $this->audit->log($actor, 'shipment.dispatched', $shipment, null, [

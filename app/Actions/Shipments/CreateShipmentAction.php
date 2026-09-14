@@ -8,6 +8,8 @@ use App\Domain\Identity\AuditLogger;
 use App\Enums\ShipmentStatus;
 use App\Models\Batch;
 use App\Models\Distribution;
+use App\Models\DistributionNode;
+use App\Models\Organization;
 use App\Models\Route as LogisticsRoute;
 use App\Models\Shipment;
 use App\Models\User;
@@ -46,12 +48,38 @@ class CreateShipmentAction
                 ? Distribution::query()->find($data['distribution_id'])
                 : null;
 
+            $originNodeId = $data['origin_node_id'] ?? $route?->origin_node_id;
+            $destinationNodeId = $data['destination_node_id'] ?? $route?->destination_node_id;
+
+            $originNode = $originNodeId
+                ? DistributionNode::query()->with('organization')->find($originNodeId)
+                : null;
+            $destinationNode = $destinationNodeId
+                ? DistributionNode::query()->with('organization')->find($destinationNodeId)
+                : null;
+
+            $fromOrgId = $data['from_organization_id']
+                ?? $distribution?->from_organization_id
+                ?? $originNode?->organization_id;
+            $toOrgId = $data['to_organization_id']
+                ?? $distribution?->to_organization_id
+                ?? $destinationNode?->organization_id;
+
+            $fromLocationId = $data['from_location_id']
+                ?? $distribution?->from_location_id
+                ?? $originNode?->location_id
+                ?? ($fromOrgId ? Organization::query()->whereKey($fromOrgId)->value('primary_location_id') : null);
+            $toLocationId = $data['to_location_id']
+                ?? $distribution?->to_location_id
+                ?? $destinationNode?->location_id
+                ?? ($toOrgId ? Organization::query()->whereKey($toOrgId)->value('primary_location_id') : null);
+
             $totalQty = 0.0;
             $unit = $data['unit'] ?? 'kg';
             $normalizedItems = [];
 
             foreach ($items as $item) {
-                $batch = Batch::query()->findOrFail($item['batch_id']);
+                $batch = Batch::query()->with('product')->findOrFail($item['batch_id']);
                 $qty = (float) ($item['quantity'] ?? $batch->quantity);
                 $itemUnit = $item['unit'] ?? $batch->unit ?? $unit;
                 $totalQty += $qty;
@@ -74,12 +102,12 @@ class CreateShipmentAction
                 'distribution_id' => $distribution?->id,
                 'vehicle_id' => $vehicle?->id,
                 'route_id' => $route?->id,
-                'from_organization_id' => $data['from_organization_id'] ?? $distribution?->from_organization_id,
-                'to_organization_id' => $data['to_organization_id'] ?? $distribution?->to_organization_id,
-                'from_location_id' => $data['from_location_id'] ?? $distribution?->from_location_id,
-                'to_location_id' => $data['to_location_id'] ?? $distribution?->to_location_id,
-                'origin_node_id' => $data['origin_node_id'] ?? $route?->origin_node_id,
-                'destination_node_id' => $data['destination_node_id'] ?? $route?->destination_node_id,
+                'from_organization_id' => $fromOrgId,
+                'to_organization_id' => $toOrgId,
+                'from_location_id' => $fromLocationId,
+                'to_location_id' => $toLocationId,
+                'origin_node_id' => $originNode?->id,
+                'destination_node_id' => $destinationNode?->id,
                 'created_by' => $actor->id,
                 'total_quantity' => $totalQty,
                 'unit' => $unit,
