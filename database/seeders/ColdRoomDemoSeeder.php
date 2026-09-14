@@ -45,11 +45,13 @@ class ColdRoomDemoSeeder extends Seeder
             ?? $createRoom->execute($retailer, $shop, [
                 'name' => 'Chambre froide Lac 2 — A',
                 'code' => 'CF-LAC2-A',
+                'type' => 'refrigerated',
                 'capacity_kg' => 2000,
                 'target_temp_min_c' => 2,
                 'target_temp_max_c' => 4,
                 'humidity_min_pct' => 80,
                 'humidity_max_pct' => 90,
+                'energy_kwh_day' => 48,
                 'description' => 'Nœud de distribution du Marché Local Lac 2 — flux lots frais.',
             ]);
 

@@ -10,6 +10,10 @@ class NotificationController extends Controller
 {
     public function feed(Request $request): JsonResponse
     {
+        // Release the session lock immediately so polling does not serialize
+        // behind other page requests (~500ms stalls with the file session driver).
+        $this->releaseSession($request);
+
         $user = $request->user();
         $since = $request->query('since');
 
@@ -19,10 +23,15 @@ class NotificationController extends Controller
             $query->where('created_at', '>', $since);
         }
 
-        $notifications = $query->limit(20)->get()->map(fn (DatabaseNotification $n) => $this->transform($n));
+        $notifications = $query
+            ->limit(20)
+            ->get(['id', 'type', 'data', 'read_at', 'created_at'])
+            ->map(fn (DatabaseNotification $n) => $this->transform($n));
+
+        $unreadCount = $user->unreadNotifications()->count();
 
         return response()->json([
-            'unread_count' => $user->unreadNotifications()->count(),
+            'unread_count' => $unreadCount,
             'server_time' => now()->toIso8601String(),
             'notifications' => $notifications,
         ]);
@@ -32,13 +41,18 @@ class NotificationController extends Controller
     {
         $notification = $request->user()->notifications()->whereKey($id)->firstOrFail();
         $notification->markAsRead();
+        $this->releaseSession($request);
 
-        return response()->json(['ok' => true, 'unread_count' => $request->user()->unreadNotifications()->count()]);
+        return response()->json([
+            'ok' => true,
+            'unread_count' => $request->user()->unreadNotifications()->count(),
+        ]);
     }
 
     public function markAllRead(Request $request): JsonResponse
     {
         $request->user()->unreadNotifications->markAsRead();
+        $this->releaseSession($request);
 
         return response()->json(['ok' => true, 'unread_count' => 0]);
     }
@@ -61,5 +75,12 @@ class NotificationController extends Controller
             'created_at' => $notification->created_at?->toIso8601String(),
             'is_unread' => $notification->read_at === null,
         ];
+    }
+
+    protected function releaseSession(Request $request): void
+    {
+        if ($request->hasSession()) {
+            $request->session()->save();
+        }
     }
 }

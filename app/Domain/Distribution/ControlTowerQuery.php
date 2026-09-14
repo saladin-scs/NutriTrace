@@ -31,13 +31,25 @@ final class ControlTowerQuery
             ->count();
         $delayed = Shipment::query()->where('status', ShipmentStatus::Delayed)->count();
         $coldRoomsActive = ColdRoom::query()->where('status', 'active')->count();
+        $avgOccupancy = (float) (ColdRoom::query()->where('status', 'active')->get()->avg(fn ($r) => $r->occupancyRate()) ?? 0);
+        $tempAlerts = \App\Models\TemperatureRecord::query()
+            ->whereIn('status', ['warning', 'critical'])
+            ->where('recorded_at', '>=', now()->subDay())
+            ->count();
+
+        $openAnomalies = \App\Models\Anomaly::query()->active()->count();
+        $criticalAnomalies = \App\Models\Anomaly::query()->active()->where('severity', 'critical')->count();
 
         return [
             'active_shipments' => $activeShipments,
             'deliveries_today' => $deliveriesToday,
             'delayed_shipments' => $delayed,
             'cold_rooms_active' => $coldRoomsActive,
-            'alerts_count' => $delayed,
+            'cold_chain_avg_occupancy_pct' => round($avgOccupancy, 1),
+            'temperature_alerts_24h' => $tempAlerts,
+            'open_anomalies' => $openAnomalies,
+            'critical_anomalies' => $criticalAnomalies,
+            'alerts_count' => $openAnomalies > 0 ? $openAnomalies : ($delayed + $tempAlerts),
             'vehicles_in_transit' => Vehicle::query()->where('status', 'in_transit')->count(),
         ];
     }

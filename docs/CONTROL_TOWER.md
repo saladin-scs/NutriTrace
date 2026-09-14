@@ -1,4 +1,4 @@
-# Control Tower — Phase 1
+# Control Tower — Phases 1–3
 
 ## Lien avec l’existant
 
@@ -7,23 +7,49 @@
 | `Organization` / `Location` | Acteurs + géoloc des nœuds |
 | `Batch` / `TraceabilityEvent` | Lots + timeline événementielle |
 | `Distribution` | Transfert métier lot (inchangé) |
-| `ColdRoom` | Nœud cold_room sur le canal |
-| **Nouveau** `Shipment` | Unité ops logistique (véhicule, route, ETA, statut) |
-| **Nouveau** `DistributionChannel` / `Node` / `Link` | Graphe du réseau |
-| **Nouveau** `Vehicle` / `Route` / `VehiclePosition` | Tracking prêt IoT |
+| `ColdRoom` + `ColdRoomMovement` | Nœud stratégique + historique flux |
+| **Phase 1** `Shipment` / `Vehicle` / `Route` | Unité ops logistique |
+| **Phase 2** `StorageRecord` / `TemperatureRecord` / `StockMovement` | Ledger stock + T° + grand livre |
+| **Facade** `ColdChain` | Twin / FEFO / mass-balance / sensor |
+| **Phase 3** `Anomaly` + Analytics domain | KPI engine, Health Score, Alert Center |
+| **Facade** `Analytics` | `dashboard()`, `health()`, `scanAnomalies()`, `alertCenter()` |
 
-## Formule CO₂e (estimation)
+## Supply Chain Health Score
 
-`CO2e = distance_km × emission_factor × load_factor`
+Pondération documentée (configurable) :
 
-où `load_factor = clamp(load_kg / capacity_kg, 0.3, 1.2)` (sinon 1.0).
+| Pilier | Poids |
+|--------|------:|
+| Delivery performance | 30% |
+| Cold chain compliance | 25% |
+| Traceability coverage | 20% |
+| Waste performance | 15% |
+| Environmental | 10% |
 
-## UI
+Score 0–100 + label (Excellent → Critique). **Aide à la décision uniquement.**
 
-- Web : `/control-tower` (carte Leaflet + KPIs + panneau détail)
-- Shipments : `/shipments`
-- API : `/api/v1/dashboard/control-tower`, `/api/v1/shipments`, `/api/v1/vehicles`, `/api/v1/batches/{batch}/timeline`
+## Anomalies (éthique)
 
-## Seed
+Flux : **anomalie → preuve → alerte → vérification humaine**  
+Pas d’accusation automatique (spéculation, rétention, fraude…).
 
-`ControlTowerDemoSeeder` — Bizerte → Tunis DC → Sousse → Sfax + resto Médina.
+Catégories : delay, temperature, capacity, storage duration, near expiry, mass balance, stock concentration, excessive loss…
+
+## UI / API
+
+- Web : `/control-tower` (onglets Opérations + Intelligence), `/alert-center`, `/cold-rooms/{id}`, `/shipments`
+- `/analytics` redirige vers Control Tower → Intelligence
+- API : `/api/v1/analytics/kpis|health|waste|cold-chain|environment`
+- API : `/api/v1/alerts`, `POST /alerts/scan`, `PATCH /alerts/{id}`
+- Artisan : `php artisan nutritrace:scan-anomalies` (planifié toutes les 15 min)
+
+## Cache
+
+`KpiService` cache le dashboard ~60s (`Cache` — Redis si `CACHE_STORE=redis`).
+
+## Docker Desktop
+
+```bash
+docker compose up -d mysql redis
+docker compose up -d --build app
+```

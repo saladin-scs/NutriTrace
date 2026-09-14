@@ -2,8 +2,6 @@
 |--------------------------------------------------------------------------
 | BACK OFFICE — template Blade administration
 |--------------------------------------------------------------------------
-| Utilisé pour : /admin/* (organisations, users, supervision)
-| Front office : layouts/front.blade.php
 --}}
 <!DOCTYPE html>
 <html lang="fr">
@@ -37,10 +35,16 @@
                 <a class="rounded-xl px-3 py-2.5 transition hover:bg-white/10 {{ request()->routeIs('admin.organizations.*') ? 'bg-white/10 font-semibold' : '' }}" href="{{ route('admin.organizations.index') }}">Organisations</a>
                 <a class="rounded-xl px-3 py-2.5 transition hover:bg-white/10 {{ request()->routeIs('admin.users.*') ? 'bg-white/10 font-semibold' : '' }}" href="{{ route('admin.users.index') }}">Utilisateurs</a>
 
-                <p class="mb-2 mt-6 px-3 text-[10px] uppercase tracking-[0.2em] text-emerald-200/40">Traçabilité</p>
+                <p class="mb-2 mt-6 px-3 text-[10px] uppercase tracking-[0.2em] text-emerald-200/40">Opérations</p>
+                <a class="rounded-xl px-3 py-2.5 transition hover:bg-white/10" href="{{ route('control-tower.index') }}">Control Tower</a>
+                <a class="rounded-xl px-3 py-2.5 transition hover:bg-white/10" href="{{ route('shipments.index') }}">Shipments</a>
+                <a class="rounded-xl px-3 py-2.5 transition hover:bg-white/10" href="{{ route('alert-center.index') }}">Alertes</a>
+                <a class="rounded-xl px-3 py-2.5 transition hover:bg-white/10" href="{{ route('cold-rooms.index') }}">Chambres froides</a>
+
+                <p class="mb-2 mt-6 px-3 text-[10px] uppercase tracking-[0.2em] text-emerald-200/40">Référentiel</p>
                 <a class="rounded-xl px-3 py-2.5 transition hover:bg-white/10" href="{{ route('products.index') }}">Produits</a>
                 <a class="rounded-xl px-3 py-2.5 transition hover:bg-white/10" href="{{ route('batches.index') }}">Lots & QR</a>
-                <a class="rounded-xl px-3 py-2.5 transition hover:bg-white/10" href="{{ route('cold-rooms.index') }}">Chambres & flux</a>
+                <a class="rounded-xl px-3 py-2.5 transition hover:bg-white/10" href="{{ route('organizations.index') }}">Orgs (front)</a>
 
                 <a class="mt-auto rounded-xl border border-white/10 px-3 py-2.5 text-emerald-100/80 transition hover:bg-white/10" href="{{ route('dashboard') }}">← Front office</a>
             </nav>
@@ -57,7 +61,12 @@
                         <p class="hidden text-xs text-nt-ink/45 sm:block">Bonjour, {{ auth()->user()->name }}</p>
                     </div>
                 </div>
-                <a href="{{ route('profile.edit') }}" class="nt-btn-secondary !py-2 text-xs">Profil</a>
+                <div class="flex items-center gap-2">
+                    <a href="{{ route('shipments.index') }}" class="hidden nt-btn-secondary !py-2 text-xs sm:inline-flex">Shipments</a>
+                    <a href="{{ route('alert-center.index') }}" class="hidden nt-btn-secondary !py-2 text-xs md:inline-flex">Alertes</a>
+                    <a href="{{ route('cold-rooms.index') }}" class="hidden nt-btn-secondary !py-2 text-xs lg:inline-flex">Chambres</a>
+                    <a href="{{ route('profile.edit') }}" class="nt-btn-secondary !py-2 text-xs">Profil</a>
+                </div>
             </header>
 
             <section class="flex-1 px-4 py-6 sm:px-6 lg:px-8">

@@ -6,11 +6,14 @@ use App\Actions\ColdRooms\CreateColdRoomAction;
 use App\Actions\ColdRooms\RecordColdRoomMovementAction;
 use App\Domain\ColdRoom\ColdRoomFlowInterpreter;
 use App\Enums\ColdRoomMovementType;
+use App\Enums\ColdRoomType;
+use App\Facades\ColdChain;
 use App\Http\Requests\ColdRooms\RecordColdRoomMovementRequest;
 use App\Http\Requests\ColdRooms\StoreColdRoomRequest;
 use App\Models\Batch;
 use App\Models\ColdRoom;
 use App\Models\Organization;
+use App\View\Presenters\ColdRoomTwinPresenter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -23,7 +26,7 @@ class ColdRoomController extends Controller
 
         $rooms = ColdRoom::query()
             ->with(['organization', 'location', 'responsible'])
-            ->withCount('movements')
+            ->withCount(['movements', 'openStorageRecords'])
             ->when(! $request->user()->isAdmin(), function ($query) use ($request) {
                 $query->whereIn('organization_id', $request->user()->organizations()->pluck('organizations.id'));
             })
@@ -41,7 +44,10 @@ class ColdRoomController extends Controller
             ? Organization::query()->orderBy('name')->get()
             : $request->user()->organizations()->orderBy('name')->get();
 
-        return view('cold-rooms.create', compact('organizations'));
+        return view('cold-rooms.create', [
+            'organizations' => $organizations,
+            'types' => ColdRoomType::cases(),
+        ]);
     }
 
     public function store(StoreColdRoomRequest $request, CreateColdRoomAction $action): RedirectResponse
@@ -58,14 +64,16 @@ class ColdRoomController extends Controller
 
         return redirect()
             ->route('cold-rooms.show', $room)
-            ->with('success', 'Chambre froide créée — nœud de distribution prêt pour les flux.');
+            ->with('success', 'Chambre froide créée — nœud stratégique du réseau prêt.');
     }
 
     public function show(ColdRoom $coldRoom, ColdRoomFlowInterpreter $interpreter): View
     {
         $this->authorize('view', $coldRoom);
 
-        $coldRoom->load(['organization', 'location', 'responsible']);
+        $coldRoom->load(['organization', 'ownerOrganization', 'location', 'responsible']);
+
+        $twin = new ColdRoomTwinPresenter(ColdChain::twin($coldRoom));
 
         $movements = $coldRoom->movements()
             ->with([
@@ -93,10 +101,15 @@ class ColdRoomController extends Controller
 
         return view('cold-rooms.show', [
             'coldRoom' => $coldRoom,
+            'twin' => $twin,
             'flows' => $flows,
             'batches' => $batches,
             'movementTypes' => ColdRoomMovementType::cases(),
             'organizations' => Organization::query()->orderBy('name')->get(),
+            'opsContext' => [
+                'shipment' => session('ops.shipment_code'),
+                'batch' => session('ops.batch_code'),
+            ],
         ]);
     }
 
@@ -109,6 +122,23 @@ class ColdRoomController extends Controller
 
         $action->execute($request->user(), $coldRoom, $request->validated());
 
-        return back()->with('success', 'Flux chambre froide historisé (traçabilité mise à jour).');
+        return back()->with('success', 'Flux historisé — stock, occupation et traçabilité mis à jour.');
+    }
+
+    public function recordTemperature(Request $request, ColdRoom $coldRoom): RedirectResponse
+    {
+        $this->authorize('recordMovement', $coldRoom);
+
+        $data = $request->validate([
+            'temperature_c' => ['nullable', 'numeric'],
+        ]);
+
+        ColdChain::recordSensorReading(
+            $coldRoom,
+            $request->user(),
+            isset($data['temperature_c']) ? (float) $data['temperature_c'] : null,
+        );
+
+        return back()->with('success', 'Relevé de température enregistré.');
     }
 }

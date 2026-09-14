@@ -16,15 +16,19 @@ Alpine.data('ntRealtime', (config = {}) => ({
     knownIds: new Set(),
     pollTimer: null,
     toastSeq: 0,
+    polling: false,
 
     init() {
         this.poll();
-        this.pollTimer = setInterval(() => this.poll(true), config.intervalMs || 3000);
+        this.startTimer();
 
         document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) {
-                this.poll(true);
+            if (document.hidden) {
+                this.stopTimer();
+                return;
             }
+            this.poll(true);
+            this.startTimer();
         });
 
         if (config.flashSuccess) {
@@ -47,13 +51,32 @@ Alpine.data('ntRealtime', (config = {}) => ({
         }
     },
 
-    destroy() {
+    startTimer() {
+        this.stopTimer();
+        this.pollTimer = setInterval(() => {
+            if (!document.hidden) {
+                this.poll(true);
+            }
+        }, config.intervalMs || 15000);
+    },
+
+    stopTimer() {
         if (this.pollTimer) {
             clearInterval(this.pollTimer);
+            this.pollTimer = null;
         }
     },
 
+    destroy() {
+        this.stopTimer();
+    },
+
     async poll(incremental = false) {
+        if (this.polling) {
+            return;
+        }
+        this.polling = true;
+
         try {
             const url = new URL(config.feedUrl, window.location.origin);
             if (incremental && this.serverTime) {
@@ -101,6 +124,8 @@ Alpine.data('ntRealtime', (config = {}) => ({
             }
         } catch (e) {
             // Silent offline resilience.
+        } finally {
+            this.polling = false;
         }
     },
 

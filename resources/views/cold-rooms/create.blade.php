@@ -21,6 +21,14 @@
             <label class="nt-label" for="name">Nom</label>
             <input id="name" name="name" class="nt-field" value="{{ old('name') }}" required placeholder="Ex. CF Charguia A">
         </div>
+        <div>
+            <label class="nt-label" for="type">Type</label>
+            <select id="type" name="type" class="nt-field">
+                @foreach ($types as $type)
+                    <option value="{{ $type->value }}" @selected(old('type', 'refrigerated') === $type->value)>{{ $type->label() }}</option>
+                @endforeach
+            </select>
+        </div>
         <div class="grid gap-4 sm:grid-cols-2">
             <div>
                 <label class="nt-label" for="capacity_kg">Capacité (kg)</label>

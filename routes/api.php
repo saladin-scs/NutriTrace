@@ -1,7 +1,10 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AlertCenterApiController;
+use App\Http\Controllers\Api\V1\AnalyticsApiController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BatchTimelineApiController;
+use App\Http\Controllers\Api\V1\ColdChainApiController;
 use App\Http\Controllers\Api\V1\ControlTowerApiController;
 use App\Http\Controllers\Api\V1\OrganizationController;
 use App\Http\Controllers\Api\V1\ShipmentApiController;
@@ -46,5 +49,21 @@ Route::prefix('v1')->group(function () {
 
         Route::get('vehicles', [VehicleApiController::class, 'index'])->name('api.v1.vehicles.index');
         Route::get('dashboard/control-tower', [ControlTowerApiController::class, 'show'])->name('api.v1.control-tower');
+
+        Route::get('analytics/kpis', [AnalyticsApiController::class, 'kpis'])->name('api.v1.analytics.kpis');
+        Route::get('analytics/health', [AnalyticsApiController::class, 'health'])->name('api.v1.analytics.health');
+        Route::get('analytics/waste', [AnalyticsApiController::class, 'waste'])->name('api.v1.analytics.waste');
+        Route::get('analytics/cold-chain', [AnalyticsApiController::class, 'coldChain'])->name('api.v1.analytics.cold-chain');
+        Route::get('analytics/environment', [AnalyticsApiController::class, 'environment'])->name('api.v1.analytics.environment');
+
+        Route::get('alerts', [AlertCenterApiController::class, 'index'])->name('api.v1.alerts.index');
+        Route::post('alerts/scan', [AlertCenterApiController::class, 'scan'])->name('api.v1.alerts.scan');
+        Route::patch('alerts/{anomaly}', [AlertCenterApiController::class, 'updateStatus'])->name('api.v1.alerts.update');
+
+        Route::get('cold-rooms/{coldRoom}/twin', [ColdChainApiController::class, 'twin'])->name('api.v1.cold-rooms.twin');
+        Route::get('cold-rooms/{coldRoom}/temperature', [ColdChainApiController::class, 'temperatureHistory'])->name('api.v1.cold-rooms.temperature.index');
+        Route::post('cold-rooms/{coldRoom}/temperature', [ColdChainApiController::class, 'temperature'])->name('api.v1.cold-rooms.temperature');
+        Route::get('cold-rooms/{coldRoom}/fefo', [ColdChainApiController::class, 'fefo'])->name('api.v1.cold-rooms.fefo');
+        Route::get('batches/{batch}/mass-balance', [ColdChainApiController::class, 'massBalance'])->name('api.v1.batches.mass-balance');
     });
 });

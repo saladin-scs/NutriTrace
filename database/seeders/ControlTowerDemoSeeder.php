@@ -136,13 +136,18 @@ class ControlTowerDemoSeeder extends Seeder
             ['code' => 'CF-TUNIS-01'],
             [
                 'organization_id' => $actors['dc']->id,
+                'owner_organization_id' => $actors['dc']->id,
                 'location_id' => $actors['dc']->primary_location_id,
                 'responsible_user_id' => $logistics->id,
                 'name' => 'Chambre froide DC Tunis',
+                'type' => 'refrigerated',
                 'status' => 'active',
                 'capacity_kg' => 12000,
+                'occupied_capacity_kg' => 0,
                 'target_temp_min_c' => 2,
                 'target_temp_max_c' => 6,
+                'current_temperature_c' => 4.3,
+                'energy_kwh_day' => 210,
             ]
         );
 

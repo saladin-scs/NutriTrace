@@ -6,7 +6,7 @@
         readUrl: @js(url('/notifications/__ID__/read')),
         readAllUrl: @js(route('notifications.read-all')),
         csrf: @js(csrf_token()),
-        intervalMs: 3000,
+        intervalMs: 15000,
         flashSuccess: @js(session('success')),
         flashError: @js(session('error')),
     })"

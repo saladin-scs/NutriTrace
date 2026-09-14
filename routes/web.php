@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Admin\OrganizationController as AdminOrganizationController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\AlertCenterController;
+use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\BatchController;
 use App\Http\Controllers\ColdRoomController;
 use App\Http\Controllers\ControlTowerController;
@@ -20,6 +22,11 @@ Route::get('/trace/{code}', TracePassportController::class)->name('trace.show');
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::get('/control-tower', [ControlTowerController::class, 'index'])->name('control-tower.index');
+    Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
+    Route::get('/alert-center', [AlertCenterController::class, 'index'])->name('alert-center.index');
+    Route::get('/alert-center/{anomaly}', [AlertCenterController::class, 'show'])->name('alert-center.show');
+    Route::patch('/alert-center/{anomaly}/status', [AlertCenterController::class, 'updateStatus'])->name('alert-center.status');
+    Route::post('/alert-center/scan', [AlertCenterController::class, 'scan'])->name('alert-center.scan');
 
     Route::get('/shipments', [ShipmentController::class, 'index'])->name('shipments.index');
     Route::get('/shipments/create', [ShipmentController::class, 'create'])->name('shipments.create');
@@ -56,6 +63,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/cold-rooms', [ColdRoomController::class, 'store'])->name('cold-rooms.store');
     Route::get('/cold-rooms/{coldRoom}', [ColdRoomController::class, 'show'])->name('cold-rooms.show');
     Route::post('/cold-rooms/{coldRoom}/movements', [ColdRoomController::class, 'recordMovement'])->name('cold-rooms.movements.store');
+    Route::post('/cold-rooms/{coldRoom}/temperature', [ColdRoomController::class, 'recordTemperature'])->name('cold-rooms.temperature.store');
 
     Route::get('/notifications/feed', [NotificationController::class, 'feed'])->name('notifications.feed');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');

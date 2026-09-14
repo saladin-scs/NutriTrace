@@ -24,12 +24,16 @@
                         {{ $room->code }} · {{ $room->organization?->name }}
                         @if ($room->location?->city) · {{ $room->location->city }} @endif
                         · {{ $room->movements_count }} flux
+                        · {{ $room->open_storage_records_count }} lots en stock
                     </p>
-                    @if ($room->target_temp_min_c !== null || $room->target_temp_max_c !== null)
-                        <p class="mt-1 text-xs text-nt-ink/45">
-                            Consigne {{ $room->target_temp_min_c }}°C → {{ $room->target_temp_max_c }}°C
-                        </p>
-                    @endif
+                    <p class="mt-1 text-xs text-nt-ink/45">
+                        Occupation {{ $room->occupancyRate() }}%
+                        ({{ number_format((float) $room->occupied_capacity_kg, 0, ',', ' ') }} /
+                        {{ number_format((float) $room->capacity_kg, 0, ',', ' ') }} kg)
+                        @if ($room->current_temperature_c !== null)
+                            · {{ $room->current_temperature_c }}°C
+                        @endif
+                    </p>
                 </div>
                 <span class="rounded-full bg-nt-mist px-3 py-1 text-xs font-medium">{{ $room->status->label() }}</span>
             </div>

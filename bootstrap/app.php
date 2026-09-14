@@ -14,6 +14,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
+            'ops.context' => \App\Http\Middleware\RememberOperationalContext::class,
+        ]);
+
+        // StartSession is part of the default web group; append ops context on web.
+        $middleware->web(append: [
+            \App\Http\Middleware\RememberOperationalContext::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

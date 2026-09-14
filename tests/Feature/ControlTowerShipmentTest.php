@@ -90,7 +90,7 @@ class ControlTowerShipmentTest extends TestCase
         $this->actingAs($user)
             ->get(route('control-tower.index'))
             ->assertOk()
-            ->assertSee('Distribution Control Tower');
+            ->assertSee('Control Tower');
 
         $token = $user->createToken('test')->plainTextToken;
 

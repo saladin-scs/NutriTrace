@@ -2,8 +2,8 @@
 |--------------------------------------------------------------------------
 | FRONT OFFICE — template Blade public / acteurs
 |--------------------------------------------------------------------------
-| Utilisé pour : dashboard, organisations, produits, lots, chambres froides, passeport…
-| Back office  : layouts/admin.blade.php
+| Nav principale : ops (Control Tower, Shipments, Alertes, Chambres) + Profil
+| Référentiel (orgs / produits / lots) accessible depuis le Dashboard
 --}}
 <!DOCTYPE html>
 <html lang="fr">
@@ -11,7 +11,7 @@
     @include('layouts.partials.head')
 </head>
 <body class="flex min-h-screen flex-col font-sans antialiased text-nt-ink" x-data="{ mobileOpen: false }">
-    <header class="sticky top-0 z-40 border-b border-[var(--nt-line)] bg-[var(--nt-surface)]/85 backdrop-blur-xl">
+    <header class="sticky top-0 z-40 border-b border-[var(--nt-line)] bg-[var(--nt-surface)]/90 backdrop-blur-xl">
         <div class="nt-container flex h-16 items-center justify-between gap-4">
             <a href="{{ route('home') }}" class="group flex items-center gap-2.5">
                 <span class="nt-mark transition group-hover:scale-105">
@@ -23,14 +23,12 @@
                 <span class="font-display text-xl font-semibold tracking-tight text-nt-ink">NutriTrace</span>
             </a>
 
-            <nav class="hidden items-center gap-5 lg:flex">
+            <nav class="hidden items-center gap-1 xl:flex">
                 @auth
                     <a href="{{ route('dashboard') }}" class="nt-nav-link {{ request()->routeIs('dashboard') ? 'is-active' : '' }}">Dashboard</a>
-                    <a href="{{ route('control-tower.index') }}" class="nt-nav-link {{ request()->routeIs('control-tower.*') ? 'is-active' : '' }}">Control Tower</a>
+                    <a href="{{ route('control-tower.index') }}" class="nt-nav-link {{ request()->routeIs('control-tower.*') || request()->routeIs('analytics.*') ? 'is-active' : '' }}">Control Tower</a>
                     <a href="{{ route('shipments.index') }}" class="nt-nav-link {{ request()->routeIs('shipments.*') ? 'is-active' : '' }}">Shipments</a>
-                    <a href="{{ route('organizations.index') }}" class="nt-nav-link {{ request()->routeIs('organizations.*') ? 'is-active' : '' }}">Organisations</a>
-                    <a href="{{ route('products.index') }}" class="nt-nav-link {{ request()->routeIs('products.*') ? 'is-active' : '' }}">Produits</a>
-                    <a href="{{ route('batches.index') }}" class="nt-nav-link {{ request()->routeIs('batches.*') ? 'is-active' : '' }}">Lots</a>
+                    <a href="{{ route('alert-center.index') }}" class="nt-nav-link {{ request()->routeIs('alert-center.*') ? 'is-active' : '' }}">Alertes</a>
                     <a href="{{ route('cold-rooms.index') }}" class="nt-nav-link {{ request()->routeIs('cold-rooms.*') ? 'is-active' : '' }}">Chambres froides</a>
                     <a href="{{ route('profile.edit') }}" class="nt-nav-link {{ request()->routeIs('profile.*') ? 'is-active' : '' }}">Profil</a>
                     @if(auth()->user()->isAdmin())
@@ -51,7 +49,7 @@
                     </form>
                 @endauth
                 <button type="button"
-                        class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--nt-line)] bg-white/70 lg:hidden"
+                        class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--nt-line)] bg-white/70 xl:hidden"
                         @click="mobileOpen = !mobileOpen"
                         :aria-expanded="mobileOpen.toString()"
                         aria-label="Menu">
@@ -63,17 +61,21 @@
             </div>
         </div>
 
-        <div x-cloak x-show="mobileOpen" x-transition class="border-t border-[var(--nt-line)] bg-[var(--nt-surface)] lg:hidden">
+        <div x-cloak x-show="mobileOpen" x-transition class="border-t border-[var(--nt-line)] bg-[var(--nt-surface)] xl:hidden">
             <nav class="nt-container flex flex-col gap-1 py-3">
                 @auth
                     <a href="{{ route('dashboard') }}" class="rounded-xl px-3 py-2.5 text-sm font-medium hover:bg-nt-mist">Dashboard</a>
                     <a href="{{ route('control-tower.index') }}" class="rounded-xl px-3 py-2.5 text-sm font-medium hover:bg-nt-mist">Control Tower</a>
                     <a href="{{ route('shipments.index') }}" class="rounded-xl px-3 py-2.5 text-sm font-medium hover:bg-nt-mist">Shipments</a>
-                    <a href="{{ route('organizations.index') }}" class="rounded-xl px-3 py-2.5 text-sm font-medium hover:bg-nt-mist">Organisations</a>
-                    <a href="{{ route('products.index') }}" class="rounded-xl px-3 py-2.5 text-sm font-medium hover:bg-nt-mist">Produits</a>
-                    <a href="{{ route('batches.index') }}" class="rounded-xl px-3 py-2.5 text-sm font-medium hover:bg-nt-mist">Lots</a>
+                    <a href="{{ route('alert-center.index') }}" class="rounded-xl px-3 py-2.5 text-sm font-medium hover:bg-nt-mist">Alertes</a>
                     <a href="{{ route('cold-rooms.index') }}" class="rounded-xl px-3 py-2.5 text-sm font-medium hover:bg-nt-mist">Chambres froides</a>
                     <a href="{{ route('profile.edit') }}" class="rounded-xl px-3 py-2.5 text-sm font-medium hover:bg-nt-mist">Profil</a>
+                    <div class="my-2 border-t border-[var(--nt-line)] pt-2">
+                        <p class="px-3 pb-1 text-[10px] uppercase tracking-wide text-nt-ink/40">Référentiel</p>
+                        <a href="{{ route('organizations.index') }}" class="rounded-xl px-3 py-2 text-sm hover:bg-nt-mist">Organisations</a>
+                        <a href="{{ route('products.index') }}" class="rounded-xl px-3 py-2 text-sm hover:bg-nt-mist">Produits</a>
+                        <a href="{{ route('batches.index') }}" class="rounded-xl px-3 py-2 text-sm hover:bg-nt-mist">Lots</a>
+                    </div>
                     @if(auth()->user()->isAdmin())
                         <a href="{{ route('admin.dashboard') }}" class="rounded-xl px-3 py-2.5 text-sm font-medium text-nt-honey hover:bg-nt-mist">Back office</a>
                     @endif
@@ -114,9 +116,9 @@
         <div class="nt-container flex flex-col gap-2 py-8 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <p class="font-display text-lg text-nt-ink">NutriTrace</p>
-                <p class="text-xs uppercase tracking-[0.14em] text-nt-ink/40">Front office</p>
+                <p class="text-xs uppercase tracking-[0.14em] text-nt-ink/40">Control Tower · Tunisie</p>
             </div>
-            <p class="text-sm text-nt-muted">Traçabilité alimentaire · Impact · Déchets — Grand Tunis</p>
+            <p class="text-sm text-nt-muted">Traçabilité · Cold chain · Distribution</p>
         </div>
     </footer>
 </body>
